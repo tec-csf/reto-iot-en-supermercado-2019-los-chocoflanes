@@ -5,7 +5,7 @@
 ##### Integrantes:
 1. Luis Daniel Roa González - A01021960 - Santa Fe
 2. Juan Francisco Gortarez Ricardez - A01021926 - Santa Fe
-3. *[Poner aquí Nombre y Apellidos del integrante 3]* - *[Poner aquí su Matrícula]* - *[Poner aquí su campus]*
+3. Gabriel Schlam Huber - A01024122 - Santa Fe
 4. *[Poner aquí Nombre y Apellidos del integrante 4]* - *[Poner aquí su Matrícula]* - *[Poner aquí su campus]*
 5. *[Poner aquí Nombre y Apellidos del integrante 5]* - *[Poner aquí su Matrícula]* - *[Poner aquí su campus]*
 
