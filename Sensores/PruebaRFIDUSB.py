@@ -39,5 +39,9 @@ instructionText = Text(app, text="Click on the text button below\nand scan your 
 rfidText = TextBox(app)
 rfidStatus = Text(app, text="---")
 rfidStatus.repeat(1000, checkRFidTag)
+<<<<<<< HEAD
+=======
+designBy = Text(app, text="Design by Idris - Cytron Technologies", align="bottom")
+>>>>>>> 18ff3325b01d0f0af4b75cbfb0e4e874b2efc5aa
 
 app.display()
