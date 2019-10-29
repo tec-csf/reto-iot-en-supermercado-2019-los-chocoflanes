@@ -7,9 +7,9 @@ import paho.mqtt.client as mqtt
 import random
 
 # Define some project-based variables
-ssl_private_key_filepath = '/Users/gabrielschlam/Documents/UNI/6TO SEMESTRE/Semana i/iot_supermercado/demo_05/demo_private.pem'
+ssl_private_key_filepath = '/Users/gabrielschlam/Documents/UNI/6TO SEMESTRE/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Prueba cloud/demo_private.pem'
 ssl_algorithm = 'RS256'  # Either RS256 or ES256
-root_cert_filepath = '/Users/gabrielschlam/Documents/UNI/6TO SEMESTRE/Semana i/iot_supermercado/demo_05/roots.pem'
+root_cert_filepath = '/Users/gabrielschlam/Documents/UNI/6TO SEMESTRE/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Prueba cloud/roots.pem'
 project_id = 'semanai-257408'
 gcp_location = 'us-central1'
 registry_id = 'semanai'
