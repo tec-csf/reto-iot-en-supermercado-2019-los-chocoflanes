@@ -1,3 +1,20 @@
+<<<<<<< HEAD
+import RPi.GPIO as GPIO
+import Adafruit_DHT
+sensor = Adafruit_DHT.DHT11
+  #humedad
+pin = 26
+
+GPIO.setwarnings(False) # Ignore warning for now
+GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
+
+
+
+while True:
+    print("entra")
+    humedad, temperatura = Adafruit_DHT.read(sensor, pin)
+    print(temperatura)
+=======
 #working
 import RPi.GPIO as IO            # calling for header file which helps us use GPIO’s of PI
 import time                              # calling for time to provide delays in program
@@ -174,3 +191,4 @@ while 1:                                              # execute loop forever
     print (x)                                              # print the ADC value
     b0=b1=b2=b3=b4=b5=b6=b7=0      # reset the values
     time.sleep(0.1)                                 # wait for 10ms
+>>>>>>> 18ff3325b01d0f0af4b75cbfb0e4e874b2efc5aa
