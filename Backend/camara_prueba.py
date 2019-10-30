@@ -102,11 +102,13 @@ client.on_publish = on_publish
 client.tls_set(ca_certs=root_cert_filepath)
 client.connect('mqtt.googleapis.com', 443)
 client.loop_start()
-facesload = '{{ "ts": {}, "age": {}, "gender": {} }}'.format(
-        int(time.time()), faces_list[0],faces_list[1])
+
+faceload = '{{ "ts": {}, "age": {}, "gender": {} }}'.format(
+        int(time.time()), faces_list[0], faces_list[1])
+
 # Uncomment following line when ready to publish
-print("{}\n".format(facesload))
-client.publish(_MQTT_TOPIC, facesload, qos=1)
+client.publish(_MQTT_TOPIC, faceload, qos=1)
+
 client.loop_stop()
 
 
