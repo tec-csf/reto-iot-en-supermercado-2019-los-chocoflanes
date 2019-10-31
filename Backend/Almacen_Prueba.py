@@ -28,6 +28,9 @@ outputMov=11
 GPIO.setup(inputMov, GPIO.IN)
 GPIO.setup(outputMov, GPIO.OUT)
 
+#Declaración documento .CSV    
+almacen = "/mnt/c/Users/danie/Programacion/5to Semestre/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Sensores/Almacen.csv"
+
 #Arreglo para RFID
 products = []
 
@@ -58,22 +61,56 @@ def callbackCamera(chanel):
 
 
 #Lector RFID
-def Lector(products):
+def Lector(products, almacen):
     reader=SimpleMFRC522()
+    headers = []
+    id = []
+    cant = []
+    filedata = []
+    
     print("Acerque el tag al sensor")
+
+    with open(almacen, "r") as file:
+        header = file.readline()
+        for line in file:
+            if len(line) > 1:
+                row = line.split(',')
+                filedata.append(row)
+                
+                idProd = int(row[0])
+                cantProd = int(row[-1])
+
+                id.append(idProd)
+                cant.append(cantProd)
+                products.append(int(idProd))
+
     try:
-        id,text = reader.read()
-        print(id)
+        id,productSelect = reader.read()
+        #print(id)
         print(text)
         try:
-            products.index(id)
-            products.remove(id)
+            products.index(productSelect)
+            products.remove(productSelect)
+            index = id.index(productSelect)
+            if cant[index] > 0:
+                cant[index] = cant[index]-1
+
         except ValueError:
-            products.append(id)
+            products.append(productSelect)
+            index = id.index(productSelect)
+            cant[index] = cant[index]+1
+
+            filedata[index][2] = (str(cant[index]))
+
+        with open(almacen, 'w') as file:
+            file.write(header)
+            for line in filedata:
+                file.write(",".join(line))
+                file.write("\n")
+
+        file.close()
     except KeyboardInterrupt:
         pass
-
-    return products
 
 def Movimiento():
     cont=0
