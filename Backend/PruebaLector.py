@@ -2,7 +2,7 @@
 productSelect = 2
 
 #Path al .CSV
-almacen = "/mnt/c/Users/danie/Programacion/5to Semestre/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Sensores/Almacen.csv"
+almacen = "/mnt/c/Users/danie/Programacion/5to Semestre/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Backend/Almacen.csv"
 
 headers = []
 id = []
