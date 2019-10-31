@@ -6,6 +6,7 @@ import subprocess
 import datetime
 import requests
 import jwt
+import Adafruit_DHT
 import paho.mqtt.client as mqtt
 from pprint import pprint
 sys.path.append("/home/pi/MFRC522-python")
@@ -28,10 +29,15 @@ outputMov=11
 GPIO.setup(inputMov, GPIO.IN)
 GPIO.setup(outputMov, GPIO.OUT)
 
+
+#pin y tipo de sensor temperatura
+pin=23 #tiene que ser modo bcm, no board (este es pin 16)
+sensor = Adafruit_DHT.DHT11
+
 #Camara Azure
 def callbackCamera(chanel):
     
-    print("Input detected")
+    
     subprocess.call(['fswebcam -r 640x480 --no-banner /home/pi/Desktop/Semana\ i/ytmmatambn.jpg', '-1'], shell=True)
     face_uri = "https://raspberrycp.cognitiveservices.azure.com/vision/v1.0/analyze?visualFeatures=Faces&language=en"
     pathToFileInDisc = r'/home/pi/Desktop/Semana i/ytmmatambn.jpg'
@@ -47,7 +53,10 @@ def callbackCamera(chanel):
         faces_list = []
         faces_list.append(f[0]['age'])
         faces_list.append(f[0]['gender'])
-        usertoCloud(faces_list)
+        ssl_private_key_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlUsuarios/demo_private.pem'
+        root_cert_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlUsuarios/roots.pem'
+        device_id = 'ControlUsuarios'
+        usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,faces_list=faces_list)
 
     except IndexError:
         print("Face not found")
@@ -65,6 +74,7 @@ def Lector():
     except KeyboardInterrupt:
         pass
 
+#Sensor de movimiento para checar si la puerta se quedó abierta
 def Movimiento():
     cont=0
     try:
@@ -88,6 +98,23 @@ def Movimiento():
     except KeyboardInterrupt:
         pass
 
+#Medición de temperatura constante
+def Temperatura():
+    ssl_private_key_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlRefri/demo_private.pem'
+    root_cert_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlRefri/roots.pem'
+    device_id = 'ControlRefri'
+    temper_list=[]
+    try:
+        humedad, temperatura = Adafruit_DHT.read_retry(sensor, pin)
+        temper_list.append(temperatura)
+        temper_list.append(humedad)
+        time.sleep(10)
+        usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,temper_list=temper_list)
+    except IndexError:
+        print("sensor de temperatura desconectado")
+        pass
+
+#Detectar si la puerta esta abierta
 def Puertas():
     if GPIO.input(29):
         print("Doors open")
@@ -97,7 +124,9 @@ def Puertas():
         Movimiento()
     else:
         print("Doors closed")
-        time.sleep(1)
+        while (not GPIO.input(29)):
+            Temperatura()
+            time.sleep(1)
         
         
 
@@ -113,14 +142,12 @@ def on_publish(unused_client, unused_userdata, unused_mid):
     print('on_publish')
 
 
-def usertoCloud(faces_list):
-    ssl_private_key_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlUsuarios/demo_private.pem'
+def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_list=[], temper_list=[], product_list=[]):
+    
     ssl_algorithm = 'RS256'  # Either RS256 or ES256
-    root_cert_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlUsuarios/roots.pem'
     project_id = 'semanai-257408'
     gcp_location = 'us-central1'
     registry_id = 'semanai'
-    device_id = 'ControlUsuarios'
     # Get current time
 
     cur_time = datetime.datetime.utcnow()
@@ -162,23 +189,40 @@ def usertoCloud(faces_list):
     def on_publish(unused_client, unused_userdata, unused_mid):
         print('on_publish')
 
+    def publishUsuario(faces_list):
+         client.loop_start()
+         facesload = '{{ "ts": {}, "age": {}, "gender": "{}" }}'.format(int(time.time()), faces_list[0],faces_list[1])
+         print("{}\n".format(facesload))
+         client.publish(_MQTT_TOPIC, facesload, qos=1)
+         client.loop_stop()
+         
+    def publishTemperatura(temper_list):
+         client.loop_start()
+         tempload = '{{ "ts": {}, "temperature": {}, "humidity": {} }}'.format(int(time.time()), temper_list[0],temper_list[1])
+         print("{}\n".format(tempload))
+         client.publish(_MQTT_TOPIC, tempload, qos=1)
+         client.loop_stop()
+    try:    
+        client.on_connect = on_connect
+        client.on_publish = on_publish
 
-    client.on_connect = on_connect
-    client.on_publish = on_publish
-
-    # Replace this with 3rd party cert if that was used when creating registry
-    client.tls_set(ca_certs=root_cert_filepath)
-    client.connect('mqtt.googleapis.com', 443)
-    client.loop_start()
-    facesload = '{{ "ts": {}, "age": {}, "gender": "{}" }}'.format(
-        int(time.time()), faces_list[0],faces_list[1])
-    # Uncomment following line when ready to publish
-    print("{}\n".format(facesload))
-    client.publish(_MQTT_TOPIC, facesload, qos=1)
-    client.loop_stop()
-    
+        # Replace this with 3rd party cert if that was used when creating registry
+        client.tls_set(ca_certs=root_cert_filepath)
+        client.connect('mqtt.googleapis.com', 443)
+        
+        if(faces_list):
+            publishUsuario(faces_list)
+        elif(temper_list):
+            publishTemperatura(temper_list)
+    except ConnectionError:
+        print("No hay conexion a la nube")
+  
+  
+Temperatura()
+'''
 for i in range(15):    
     try:
         Puertas()
     except KeyboardInterrupt:
         pass
+        '''
