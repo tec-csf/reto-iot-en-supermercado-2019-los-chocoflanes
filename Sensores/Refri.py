@@ -34,7 +34,7 @@ def callbackCamera(chanel):
     print("Input detected")
     subprocess.call(['fswebcam -r 640x480 --no-banner /home/pi/Desktop/Semana\ i/ytmmatambn.jpg', '-1'], shell=True)
     face_uri = "https://raspberrycp.cognitiveservices.azure.com/vision/v1.0/analyze?visualFeatures=Faces&language=en"
-    pathToFileInDisc = r'/home/pi/Desktop/Semana i/tmma.jpg'
+    pathToFileInDisc = r'/home/pi/Desktop/Semana i/ytmmatambn.jpg'
     with open( pathToFileInDisc, "rb") as f:
         data = f.read()
     headers = {"Content-Type": "application/octet-stream", 'Ocp-Apim-Subscription-Key': '7e9cfbb244204fb994babd6111235269'}
@@ -43,16 +43,16 @@ def callbackCamera(chanel):
         faces = response.json()
 
         f= faces['faces']
+        
+        faces_list = []
+        faces_list.append(f[0]['age'])
+        faces_list.append(f[0]['gender'])
+        usertoCloud(faces_list)
 
     except IndexError:
         print("Face not found")
-    pass
+        pass
 
-
-    faces_list = []
-    faces_list.append(f[0]['age'])
-    faces_list.append(f[0]['gender'])
-    usertoCloud(faces_list)
 
 #Lector RFID
 def Lector():
@@ -121,7 +121,6 @@ def usertoCloud(faces_list):
     gcp_location = 'us-central1'
     registry_id = 'semanai'
     device_id = 'ControlUsuarios'
-    subfolder= 'Usuarios'
     # Get current time
 
     cur_time = datetime.datetime.utcnow()
@@ -143,7 +142,7 @@ def usertoCloud(faces_list):
 
     _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(
     project_id, gcp_location, registry_id, device_id)
-    _MQTT_TOPIC = '/devices/{}/events/{}'.format(device_id,subfolder)
+    _MQTT_TOPIC = '/devices/{}/events'.format(device_id)
 
     client = mqtt.Client(client_id=_CLIENT_ID)
     # authorization is handled purely with JWT, no user/pass, so username can be whatever
@@ -171,14 +170,15 @@ def usertoCloud(faces_list):
     client.tls_set(ca_certs=root_cert_filepath)
     client.connect('mqtt.googleapis.com', 443)
     client.loop_start()
-    facesload = '{{ "ts": {}, "age": {}, "gender": {} }}'.format(
+    facesload = '{{ "ts": {}, "age": {}, "gender": "{}" }}'.format(
         int(time.time()), faces_list[0],faces_list[1])
     # Uncomment following line when ready to publish
     print("{}\n".format(facesload))
     client.publish(_MQTT_TOPIC, facesload, qos=1)
     client.loop_stop()
     
-try:
-    Puertas()
-finally:
-    GPIO.cleanup()
+for i in range(15):    
+    try:
+        Puertas()
+    except KeyboardInterrupt:
+        pass
