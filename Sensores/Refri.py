@@ -100,6 +100,12 @@ def Lector():
 		print("Saca el producto")
 		id,productSelect = reader.read()
 		productSelect = productSelect.strip()
+		if productSelect:
+			GPIO.output(outputMov, True)
+			time.sleep(0.5)
+			GPIO.output(outputMov, False)
+
+		#Leer archivo de almacén
 		with open(almacen, "r") as file:
 			header = file.readline()
 			for line in file:
@@ -115,13 +121,14 @@ def Lector():
 				
 		for var in filedata:
 			usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,product_list=var)
+
+		#Si el producto seleccionado está en el almacén
 		if productSelect in ids:
 			arrTemp.index(productSelect)
 			arrTemp.remove(productSelect)
 			index = ids.index(productSelect)
 			if cant[index] > 0:
-				cant[index] = cant[index]-1
-				
+				cant[index] = cant[index]-1		
 
 		else:
 			arrTemp.append(productSelect)
