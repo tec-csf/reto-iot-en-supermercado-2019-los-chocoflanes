@@ -169,7 +169,7 @@ Los sensores utilizados ( y la liga de donde obtuvimos su información) fueron l
 * **Webcam:** [https://github.com/vcubells/iot\_supermercado/blob/master/demo\_02/01\_Sensors.py](https://github.com/vcubells/iot_supermercado/blob/master/demo_02/01_Sensors.py)
 * **Lectoescritor de RFID:** [https://medium.com/coinmonks/for-beginners-how-to-set-up-a-raspberry-pi-rfid-rc522-reader-and-record-data-on-iota-865f67843a2d](https://medium.com/coinmonks/for-beginners-how-to-set-up-a-raspberry-pi-rfid-rc522-reader-and-record-data-on-iota-865f67843a2d)
 
-#### 2.5.1 Lenguaje de programación**
+#### 2.5.1 Lenguaje de programación
 
 El lenguaje de programación usado fue _Python_ versión 3.6.8.
 Para más información sobre _Python_ y sus usos, a continuación se encuentra la página web: [https://docs.python.org/3/](https://docs.python.org/3/)
