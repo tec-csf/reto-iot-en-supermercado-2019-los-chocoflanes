@@ -73,7 +73,7 @@ Nuestra solución utiliza los servicios de reconocimiento facial de Microsoft Az
 
 ### 3.2 Arquitectura de la solución
 
-![Circuito completo](img/CircuitoArmado.png)
+![Circuito completo](Img/CircuitoArmado.png)
 
 ### 3.3 Frontend
 
