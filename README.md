@@ -1,7 +1,7 @@
 #
 # IoT en el Supermercado
 
-#### Equipo Los Chocoflanes**
+#### Equipo Los Chocoflanes
 
 #### Integrantes:
 
