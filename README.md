@@ -169,7 +169,7 @@ Los sensores utilizados ( y la liga de donde obtuvimos su información) fueron l
 * **Webcam:** [https://github.com/vcubells/iot\_supermercado/blob/master/demo\_02/01\_Sensors.py](https://github.com/vcubells/iot_supermercado/blob/master/demo_02/01_Sensors.py)
 * **Lectoescritor de RFID:** [https://medium.com/coinmonks/for-beginners-how-to-set-up-a-raspberry-pi-rfid-rc522-reader-and-record-data-on-iota-865f67843a2d](https://medium.com/coinmonks/for-beginners-how-to-set-up-a-raspberry-pi-rfid-rc522-reader-and-record-data-on-iota-865f67843a2d)
 
-#### 2.5.1 Lenguaje de programación**
+#### 2.5.1 Lenguaje de programación
 
 El lenguaje de programación usado fue _Python_ versión 3.6.8.
 Para más información sobre _Python_ y sus usos, a continuación se encuentra la página web: [https://docs.python.org/3/](https://docs.python.org/3/)
@@ -181,9 +181,9 @@ Para los sensores no utilizamos ningún framework para su funcionamiento óptimo
 #### 2.5.3 Librerías de funciones o dependencias
 
 Para el funcionamiento de los sensores se usaron tres librerías importantes:
-	* RPi.GPIO, la cual es la librería para la utilización de los pines en la Rpi
-	* mfrc522, la cual es la librería/API para la escritura y lectura de chips RFID a partir de un sensor conectado por pines
-	* Adafruit, la cual es una librería general de I/O, que en este proyecto fue utilizada para el input del sensor de temperatura y humedad
+* RPi.GPIO, la cual es la librería para la utilización de los pines en la Rpi
+* mfrc522, la cual es la librería/API para la escritura y lectura de chips RFID a partir de un sensor conectado por pines
+* Adafruit, la cual es una librería general de I/O, que en este proyecto fue utilizada para el input del sensor de temperatura y humedad
 
 ### 2.6 Pasos a seguir para utilizar el proyecto
 
