@@ -181,9 +181,9 @@ Para los sensores no utilizamos ningún framework para su funcionamiento óptimo
 #### 2.5.3 Librerías de funciones o dependencias
 
 Para el funcionamiento de los sensores se usaron tres librerías importantes:
-	* RPi.GPIO, la cual es la librería para la utilización de los pines en la Rpi
-	* mfrc522, la cual es la librería/API para la escritura y lectura de chips RFID a partir de un sensor conectado por pines
-	* Adafruit, la cual es una librería general de I/O, que en este proyecto fue utilizada para el input del sensor de temperatura y humedad
+* RPi.GPIO, la cual es la librería para la utilización de los pines en la Rpi
+* mfrc522, la cual es la librería/API para la escritura y lectura de chips RFID a partir de un sensor conectado por pines
+* Adafruit, la cual es una librería general de I/O, que en este proyecto fue utilizada para el input del sensor de temperatura y humedad
 
 ### 2.6 Pasos a seguir para utilizar el proyecto
 
