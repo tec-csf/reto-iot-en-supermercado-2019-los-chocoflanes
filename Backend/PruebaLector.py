@@ -1,15 +1,21 @@
-#hecho para el demo
-productSelect = 2
+import sys
+sys.path.append("/home/pi/MFRC522-python")
+from mfrc522 import SimpleMFRC522
+
+reader=SimpleMFRC522()
 
 #Path al .CSV
-almacen = "/mnt/c/Users/danie/Programacion/5to Semestre/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Backend/Almacen.csv"
+almacen = "/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Backend/Almacen.csv"
 
 headers = []
-id = []
+ids = []
 cant = []
 arrTemp = []
 filedata = []
 
+id,productSelect = reader.read()
+print(productSelect)
+productSelect = int(productSelect.strip())
 with open(almacen, "r") as file:
     header = file.readline()
     for line in file:
@@ -20,19 +26,21 @@ with open(almacen, "r") as file:
             idProd = int(row[0])
             cantProd = int(row[-1])
 
-            id.append(idProd)
+            ids.append(idProd)
             cant.append(cantProd)
             arrTemp.append(int(idProd))
 
 try:
     arrTemp.index(productSelect)
     arrTemp.remove(productSelect)
-    index = id.index(productSelect)
+    index = ids.index(productSelect)
     if cant[index] > 0:
         cant[index] = cant[index]-1
+        
+
 except ValueError:
     arrTemp.append(productSelect)
-    index = id.index(productSelect)
+    index = ids.index(productSelect)
     cant[index] = cant[index]+1
 
 filedata[index][2] = (str(cant[index]))

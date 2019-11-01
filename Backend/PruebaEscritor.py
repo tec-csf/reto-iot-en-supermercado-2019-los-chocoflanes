@@ -3,20 +3,21 @@ import sys
 sys.path.append("/home/pi/MFRC522-python")
 from mfrc522 import SimpleMFRC522
 
-almacen = "/mnt/c/Users/danie/Programacion/5to Semestre/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Sensores/Almacen.csv"
+almacen = "/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Backend/Almacen.csv"
 
 reader=SimpleMFRC522()
 
 headers = []
-id = []
+ids = []
 cant = []
 filedata = []
 
-idNovo=int(input("Id del producto: "))
+idNovo=input("Id del producto: ")
+print("Acerca el tag al sensor")
 id,idNovo=reader.write(idNovo)
 nomProd = input("Nombre del producto: ")
-print("Acerca el tag al sensor")
-print(idNovo)
+
+int(idNovo)
 print(nomProd)
 
 with open(almacen, "r") as file:
@@ -29,15 +30,15 @@ with open(almacen, "r") as file:
             idProd = int(row[0])
             cantProd = int(row[-1])
 
-            id.append(idProd)
+            ids.append(idProd)
             cant.append(cantProd)
-    print(id)
+    print(ids)
 
-if idNovo in id:
+if idNovo in ids:
     print("Se ingresará un alimento nuevo")
     #id.index(idProd)
-    id.index(idNovo)
-    index = id.index(idNovo)
+    ids.index(idNovo)
+    index = ids.index(idNovo)
     cant[index] = cant[index]+1
     filedata[index][2] = (str(cant[index]))
     print("Salida try 2")
@@ -52,8 +53,8 @@ else:
     print("Entra al try")
     #print(id)
     print(idNovo)
-    id.append(idNovo)
-    index = id.index(idNovo)
+    ids.append(idNovo)
+    index = ids.index(idNovo)
     #cant[index] = 1
     with open(almacen, 'a') as file:
         file.write("\n"+(str(idNovo))+","+nomProd +",1\n")

@@ -4,6 +4,7 @@ import json
 import time
 import subprocess
 import datetime
+import threading
 import requests
 import jwt
 import Adafruit_DHT
@@ -14,26 +15,29 @@ from mfrc522 import SimpleMFRC522
 from requests.exceptions import ConnectionError
 
 GPIO.setwarnings(False)
-chanel=10
+
 #Declaración para funcionalidad del sensor de la puerta
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(29, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-#inputs de la camara
-GPIO.setup(chanel, GPIO.IN)
-GPIO.add_event_detect(chanel, GPIO.BOTH, bouncetime=100)
+inputPuerta=7
+GPIO.setup(inputPuerta, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #Inputs para sensor movimiento
-inputMov=7
-outputMov=11
+inputMov=12
+outputMov=16
 GPIO.setup(inputMov, GPIO.IN)
 GPIO.setup(outputMov, GPIO.OUT)
 
+chanel=10
 
 #pin y tipo de sensor temperatura
-pin=23 #tiene que ser modo bcm, no board (este es pin 16)
+temperature_pin=24 #tiene que ser modo bcm, no board (este es pin 16)
 sensor = Adafruit_DHT.DHT11
-
+hot_pin=15
+cold_pin=11
+normal_pin=13
+GPIO.setup(hot_pin, GPIO.OUT)
+GPIO.setup(cold_pin, GPIO.OUT)
+GPIO.setup(normal_pin, GPIO.OUT)
 #Camara Azure
 def callbackCamera(chanel):
     
@@ -56,7 +60,8 @@ def callbackCamera(chanel):
         ssl_private_key_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlUsuarios/demo_private.pem'
         root_cert_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyControlUsuarios/roots.pem'
         device_id = 'ControlUsuarios'
-        usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,faces_list=faces_list)
+        if(faces_list):
+            usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,faces_list=faces_list)
 
     except IndexError:
         print("Face not found")
@@ -69,8 +74,8 @@ def Lector():
     print("Acerque el tag al sensor")
     try:
         id,text = reader.read()
-        print(id)
         print(text)
+            
     except KeyboardInterrupt:
         pass
 
@@ -78,19 +83,19 @@ def Lector():
 def Movimiento():
     cont=0
     try:
-        while(True):
-            time.sleep(2)
+        while(GPIO.input(inputPuerta)):
+            time.sleep(4)
             
-            if(GPIO.input(7)==False):
+            if(GPIO.input(inputMov)==False):
                 cont=cont+1
             else:
                 cont=0
                 
             if(cont==3):
-                GPIO.output(11,True)
+                GPIO.output(outputMov,True)
                 print("Pélenme!!!!!")
                 time.sleep(5)
-                GPIO.output(11,False)
+                GPIO.output(outputMov,False)
                 break
                 
             time.sleep(0.1)
@@ -105,26 +110,48 @@ def Temperatura():
     device_id = 'ControlRefri'
     temper_list=[]
     try:
-        humedad, temperatura = Adafruit_DHT.read_retry(sensor, pin)
+        humedad, temperatura = Adafruit_DHT.read_retry(sensor, temperature_pin)
         temper_list.append(temperatura)
         temper_list.append(humedad)
-        time.sleep(10)
-        usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,temper_list=temper_list)
+        # time.sleep(10)
+        if(temper_list):
+            usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,temper_list=temper_list)
+        
+        if(temperatura>30):
+            print("entro a 1")
+            GPIO.output(hot_pin,True)
+            GPIO.output(cold_pin,False)
+            GPIO.output(normal_pin,False)
+        elif(temperatura<17):
+            print("entro a 2")
+            GPIO.output(cold_pin,True)
+            GPIO.output(hot_pin,False)
+            GPIO.output(normal_pin,False)
+        else:
+            print("entro a 3")
+            GPIO.output(normal_pin,True)
+            GPIO.output(cold_pin,False)
+            GPIO.output(hot_pin,False)
+            
     except IndexError:
         print("sensor de temperatura desconectado")
         pass
 
 #Detectar si la puerta esta abierta
 def Puertas():
-    if GPIO.input(29):
+    if GPIO.input(inputPuerta):
         print("Doors open")
+        GPIO.output(normal_pin,False)
+        GPIO.output(cold_pin,False)
+        GPIO.output(hot_pin,False)
+        
         time.sleep(2)
         callbackCamera(chanel)
         Lector()
         Movimiento()
     else:
         print("Doors closed")
-        while (not GPIO.input(29)):
+        while (not GPIO.input(inputPuerta)):
             Temperatura()
             time.sleep(1)
         
@@ -202,6 +229,14 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
          print("{}\n".format(tempload))
          client.publish(_MQTT_TOPIC, tempload, qos=1)
          client.loop_stop()
+         
+    def publishAlmacen(product_list):
+         client.loop_start()
+         prodload = '{{ "updated": {},"id": {}, "producto": "{}", "cantidad": {} }}'.format(int(time.time()), product_list[0],product_list[1],product_list[2])
+         print("{}\n".format(prodload))
+         client.publish(_MQTT_TOPIC, prodload, qos=1)
+         client.loop_stop()
+         
     try:    
         client.on_connect = on_connect
         client.on_publish = on_publish
@@ -216,13 +251,13 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
             publishTemperatura(temper_list)
     except ConnectionError:
         print("No hay conexion a la nube")
+        pass
   
   
-Temperatura()
-'''
-for i in range(15):    
+
+if __name__=="__main__":   
     try:
+            #Temperatura()
         Puertas()
     except KeyboardInterrupt:
         pass
-        '''

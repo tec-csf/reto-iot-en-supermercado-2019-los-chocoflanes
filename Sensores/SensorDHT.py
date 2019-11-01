@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import Adafruit_DHT
 sensor = Adafruit_DHT.DHT11
 
-pin = 23 #tiene que ser modo bcm, no board (este es pin 16)
+pin = 24 #tiene que ser modo bcm, no board (este es pin 16)
 
 GPIO.setwarnings(False) # Ignore warning for now
 
