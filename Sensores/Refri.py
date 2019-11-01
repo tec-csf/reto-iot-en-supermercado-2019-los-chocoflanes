@@ -1,3 +1,8 @@
+'''
+Proyecto Semana i
+Equipo Los Chocoflanes
+Fecha de entrega 01/11/2019
+'''
 import RPi.GPIO as GPIO
 import sys
 import json
