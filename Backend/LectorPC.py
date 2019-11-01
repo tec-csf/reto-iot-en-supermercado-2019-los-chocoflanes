@@ -3,6 +3,8 @@ import sys
 sys.path.append("/home/pi/MFRC522-python")
 from mfrc522 import SimpleMFRC522
 
+reader=SimpleMFRC522()
+
 #Path al .CSV
 almacen = "/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Backend/Almacen.csv"
 

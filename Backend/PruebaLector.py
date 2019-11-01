@@ -13,9 +13,9 @@ cant = []
 arrTemp = []
 filedata = []
 
+print("Saca el producto")
 id,productSelect = reader.read()
-print(productSelect)
-productSelect = int(productSelect.strip())
+productSelect = productSelect.strip()
 with open(almacen, "r") as file:
     header = file.readline()
     for line in file:
@@ -23,14 +23,14 @@ with open(almacen, "r") as file:
             row = line.split(',')
             filedata.append(row)
             
-            idProd = int(row[0])
+            idProd = row[0]
             cantProd = int(row[-1])
 
             ids.append(idProd)
             cant.append(cantProd)
-            arrTemp.append(int(idProd))
+            arrTemp.append(idProd)
 
-try:
+if productSelect in ids:
     arrTemp.index(productSelect)
     arrTemp.remove(productSelect)
     index = ids.index(productSelect)
@@ -38,7 +38,7 @@ try:
         cant[index] = cant[index]-1
         
 
-except ValueError:
+else:
     arrTemp.append(productSelect)
     index = ids.index(productSelect)
     cant[index] = cant[index]+1

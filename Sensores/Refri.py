@@ -38,6 +38,10 @@ normal_pin=13
 GPIO.setup(hot_pin, GPIO.OUT)
 GPIO.setup(cold_pin, GPIO.OUT)
 GPIO.setup(normal_pin, GPIO.OUT)
+
+#ubicacion de almacen local
+almacen = "/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Backend/Almacen.csv"
+
 #Camara Azure
 def callbackCamera(chanel):
     
@@ -62,7 +66,7 @@ def callbackCamera(chanel):
         device_id = 'ControlUsuarios'
         if(faces_list):
             usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,faces_list=faces_list)
-
+            
     except IndexError:
         print("Face not found")
         pass
@@ -70,11 +74,61 @@ def callbackCamera(chanel):
 
 #Lector RFID
 def Lector():
+    ssl_private_key_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyAlmacen/demo_private.pem'
+    root_cert_filepath = '/home/pi/Desktop/Semana i/reto-iot-en-supermercado-2019-los-chocoflanes/Datasets/KeyAlmacen/roots.pem'
+    device_id = 'Almacen'
     reader=SimpleMFRC522()
     print("Acerque el tag al sensor")
     try:
-        id,text = reader.read()
-        print(text)
+ 
+        headers = []
+        ids = []
+        cant = []
+        arrTemp = []
+        filedata = []
+
+        print("Saca el producto")
+        id,productSelect = reader.read()
+        productSelect = productSelect.strip()
+        with open(almacen, "r") as file:
+            header = file.readline()
+            for line in file:
+                if len(line) > 1:
+                    row = line.split(',')
+                    filedata.append(row)
+                    idProd = row[0]
+                    cantProd = int(row[-1])
+
+                    ids.append(idProd)
+                    cant.append(cantProd)
+                    arrTemp.append(idProd)
+                
+        for var in filedata:
+            usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,product_list=var)
+        if productSelect in ids:
+            arrTemp.index(productSelect)
+            arrTemp.remove(productSelect)
+            index = ids.index(productSelect)
+            if cant[index] > 0:
+                cant[index] = cant[index]-1
+                
+
+        else:
+            arrTemp.append(productSelect)
+            index = ids.index(productSelect)
+            cant[index] = cant[index]+1
+
+        filedata[index][2] = (str(cant[index]))
+
+        with open(almacen, 'w') as file:
+            file.write(header)
+            for line in filedata:
+                file.write(",".join(line))
+                file.write("\n")
+
+        file.close()
+
+
             
     except KeyboardInterrupt:
         pass
@@ -118,17 +172,14 @@ def Temperatura():
             usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,temper_list=temper_list)
         
         if(temperatura>30):
-            print("entro a 1")
             GPIO.output(hot_pin,True)
             GPIO.output(cold_pin,False)
             GPIO.output(normal_pin,False)
         elif(temperatura<17):
-            print("entro a 2")
             GPIO.output(cold_pin,True)
             GPIO.output(hot_pin,False)
             GPIO.output(normal_pin,False)
         else:
-            print("entro a 3")
             GPIO.output(normal_pin,True)
             GPIO.output(cold_pin,False)
             GPIO.output(hot_pin,False)
@@ -232,7 +283,7 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
          
     def publishAlmacen(product_list):
          client.loop_start()
-         prodload = '{{ "updated": {},"id": {}, "producto": "{}", "cantidad": {} }}'.format(int(time.time()), product_list[0],product_list[1],product_list[2])
+         prodload = '{{ "updated": {},"id": {}, "producto": "{}", "cantidad": {} }}'.format(int(time.time()), product_list[0],product_list[1],product_list[2].strip("\n"))
          print("{}\n".format(prodload))
          client.publish(_MQTT_TOPIC, prodload, qos=1)
          client.loop_stop()
@@ -249,6 +300,8 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
             publishUsuario(faces_list)
         elif(temper_list):
             publishTemperatura(temper_list)
+        elif(product_list):
+            publishAlmacen(product_list)
     except ConnectionError:
         print("No hay conexion a la nube")
         pass
@@ -257,7 +310,8 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
 
 if __name__=="__main__":   
     try:
-            #Temperatura()
-        Puertas()
+        while True:
+        #Lector()
+            Puertas()
     except KeyboardInterrupt:
         pass
