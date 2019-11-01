@@ -154,9 +154,11 @@ def Lector():
 def Movimiento():
 	cont=0
 	try:
+		#Si puertas estan abiertas
 		while(GPIO.input(inputPuerta)):
 			time.sleep(4)
 			
+			#Si no hay movimento
 			if(GPIO.input(inputMov)==False):
 				cont=cont+1
 			else:
@@ -174,6 +176,7 @@ def Movimiento():
 	except KeyboardInterrupt:
 		pass
 
+#Enviar datos de compra de usuario
 def UsuarioCompra(productSelect,faces_list):
 	faces_list.append(productSelect.strip("\n"))
 	usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_list=faces_list)
@@ -193,6 +196,7 @@ def Temperatura():
 		if(temper_list):
 			usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id,temper_list=temper_list)
 		
+		#Encender pin correspondiente dependiendo de temperatura
 		if(temperatura>30):
 			GPIO.output(hot_pin,True)
 			GPIO.output(cold_pin,False)
@@ -230,31 +234,30 @@ def Puertas():
 			time.sleep(1)
 		
 		
-
+#Definición de error de mqtt
 def error_str(rc):
 	return '{}: {}'.format(rc, mqtt.error_string(rc))
 
-
+#Conexión con la nube
 def on_connect(unusued_client, unused_userdata, unused_flags, rc):
 	print('on_connect', error_str(rc))
 
-
+#Publicar datos
 def on_publish(unused_client, unused_userdata, unused_mid):
 	print('on_publish')
 
-
+#Mandar datos a la nube
 def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_list=[], temper_list=[], product_list=[]):
 	
 	ssl_algorithm = 'RS256'  # Either RS256 or ES256
 	project_id = 'semanai-257408'
 	gcp_location = 'us-central1'
 	registry_id = 'semanai'
+	
 	# Get current time
-
 	cur_time = datetime.datetime.utcnow()
 
 	# Create a JWT
-
 	def create_jwt():
 		token = {
 		'iat': cur_time,
@@ -278,18 +281,19 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
 	username='unused',
 	password=create_jwt())
 
-
+	#Definición de error de mqtt
 	def error_str(rc):
 		return '{}: {}'.format(rc, mqtt.error_string(rc))
 
-
+	#Conexión con la nube
 	def on_connect(unusued_client, unused_userdata, unused_flags, rc):
 		print('on_connect', error_str(rc))
 
-
+	#Publicar datos
 	def on_publish(unused_client, unused_userdata, unused_mid):
 		print('on_publish')
 
+	# Mandar datos de usuario y compra
 	def publishUsuario(faces_list):
 		 client.loop_start()
 		 facesload = '{{ "ts": {}, "age": {}, "gender": "{}", "id": {} }}'.format(int(time.time()), faces_list[0],faces_list[1],faces_list[2])
@@ -297,13 +301,15 @@ def usertoCloud(ssl_private_key_filepath,root_cert_filepath,device_id, faces_lis
 		 client.publish(_MQTT_TOPIC, facesload, qos=1)
 		 client.loop_stop()
 		 
+	#Mandar datos de temperatura
 	def publishTemperatura(temper_list):
 		 client.loop_start()
 		 tempload = '{{ "ts": {}, "temperature": {}, "humidity": {} }}'.format(int(time.time()), temper_list[0],temper_list[1])
 		 print("{}\n".format(tempload))
 		 client.publish(_MQTT_TOPIC, tempload, qos=1)
 		 client.loop_stop()
-		 
+		
+	#Mandar datos de almacén
 	def publishAlmacen(product_list):
 		 client.loop_start()
 		 prodload = '{{ "updated": {},"id": {}, "producto": "{}", "cantidad": {} }}'.format(int(time.time()), product_list[0],product_list[1],product_list[2].strip("\n"))
